@@ -4,10 +4,12 @@ from __future__ import annotations
 import tempfile
 import unittest
 from pathlib import Path
+from unittest.mock import patch
 
 from proof_slicer.batch import assumptions_summary
 from proof_slicer.slicer import (
     closure,
+    compiler_command,
     effective_deps,
     parse_blocks,
     render,
@@ -105,6 +107,19 @@ class RenderTests(unittest.TestCase):
             self.assertIn("digraph proof_slice", dot.read_text())
             self.assertIn("graph LR", mmd.read_text())
             self.assertIn("target", dot.read_text())
+
+
+class CompilerTests(unittest.TestCase):
+    def test_uses_rocq_compile(self) -> None:
+        with patch(
+            "proof_slicer.slicer.shutil.which", return_value="/opt/bin/rocq"
+        ):
+            self.assertEqual(compiler_command(), ["/opt/bin/rocq", "compile"])
+
+    def test_missing_rocq(self) -> None:
+        with patch("proof_slicer.slicer.shutil.which", return_value=None):
+            with self.assertRaises(FileNotFoundError):
+                compiler_command()
 
 
 class BatchHelperTests(unittest.TestCase):

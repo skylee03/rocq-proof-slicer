@@ -14,7 +14,7 @@ clarity, portability, or the quality of the slice are welcome.
 
 Requirements:
 
-- Rocq/Coq 9.x (`coqc` on `PATH`)
+- Rocq 9.x with `rocq` on `PATH` (`rocq compile`)
 - Python 3.10+
 
 Run the unit tests (no Rocq required):
@@ -35,8 +35,7 @@ make demo
 - Keep changes focused.
 - Update `README.md` or `docs/DESIGN.md` when behavior or scope changes.
 - Add a short note to `CHANGELOG.md` for user-visible changes.
-- If you add a demo file, make sure `coqc -q <file>` succeeds before relying
-  on it.
+- If you add a demo file, make sure `rocq compile -q <file>` succeeds before relying on it.
 
 ## Code style
 
@@ -48,7 +47,7 @@ make demo
 
 Please include:
 
-- Rocq/Coq version (`coqc --version`),
+- Rocq version (`rocq --version`),
 - the input `.v` file or a minimal reproduction,
 - the command you ran,
 - the expected and actual output.

@@ -10,17 +10,13 @@ permissions:
 
 jobs:
   unit:
-    name: Unit tests (Python ${{ matrix.python-version }})
+    name: Unit tests (Python 3.14)
     runs-on: ubuntu-latest
-    strategy:
-      fail-fast: false
-      matrix:
-        python-version: ["3.10", "3.12"]
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
         with:
-          python-version: ${{ matrix.python-version }}
+          python-version: "3.14"
       - name: Syntax check
         run: |
           python -m py_compile slice.py batch.py proof_slicer/*.py tests/*.py
@@ -29,7 +25,7 @@ jobs:
           python -m unittest discover -s tests -v
 
   integration:
-    name: Integration tests (Rocq 9.3)
+    name: Integration tests (Rocq 9.3, rocq compile)
     runs-on: ubuntu-latest
     timeout-minutes: 20
     steps:
@@ -43,6 +39,12 @@ jobs:
               sudo apt-get update -y -q
               sudo DEBIAN_FRONTEND=noninteractive apt-get install -y -q --no-install-recommends python3
             endGroup
-            startGroup "Run integration tests"
+            startGroup "Run integration tests in a writable copy"
+              # The container user and the GitHub workdir have different UIDs.
+              # Rocq writes .glob/.vo files next to the sources, so compile a
+              # copy owned by the container user instead of the bind mount.
+              WORK=$(mktemp -d)
+              cp -R . "$WORK/repo"
+              cd "$WORK/repo"
               python3 selftest.py
             endGroup

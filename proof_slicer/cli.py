@@ -14,14 +14,14 @@ def main() -> None:
     ap.add_argument("target")
     ap.add_argument("-o", "--output", type=Path, default=Path("sliced.v"))
     ap.add_argument("--stub-aux", action="store_true", help="keep auxiliary statements, Admit their proofs")
-    ap.add_argument("--minimize", action="store_true", help="use coqc as an oracle to remove more declarations")
+    ap.add_argument("--minimize", action="store_true", help="use the Rocq compiler as an oracle to remove more declarations")
     ap.add_argument("--dot", type=Path, help="write a Graphviz .dot dependency graph")
     ap.add_argument("--mermaid", type=Path, help="write a Mermaid dependency graph")
-    ap.add_argument("--refresh-glob", action="store_true", help="re-run coqc even if .glob looks fresh")
+    ap.add_argument("--refresh-glob", action="store_true", help="re-run the compiler even if .glob looks fresh")
     ap.add_argument("--no-glob", action="store_true", help="use the identifier heuristic instead of .glob")
     ap.add_argument("--json", action="store_true", help="print a JSON summary instead of text")
     ap.add_argument("--quiet", action="store_true")
-    ap.add_argument("--timeout", type=int, default=120, help="coqc timeout in seconds")
+    ap.add_argument("--timeout", type=int, default=120, help="compiler timeout in seconds")
     args = ap.parse_args()
 
     result = build_slice(

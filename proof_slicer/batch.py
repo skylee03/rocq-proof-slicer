@@ -8,7 +8,7 @@ import os
 import tempfile
 from pathlib import Path
 
-from .slicer import build_slice, cleanup_artifacts, run_coqc
+from .slicer import build_slice, cleanup_artifacts, run_rocq_compile
 
 
 def discover(paths: list[Path]) -> list[Path]:
@@ -43,7 +43,7 @@ def assumptions_summary(output: str) -> str:
 
 
 def evaluate(path: Path, target: str, stub_aux: bool, minimize: bool, timeout: int) -> dict:
-    orig_ok, orig_out = run_coqc(path, cwd=path.parent, timeout=timeout)
+    orig_ok, orig_out = run_rocq_compile(path, cwd=path.parent, timeout=timeout)
     if not orig_ok:
         return {
             "file": str(path),
@@ -54,7 +54,7 @@ def evaluate(path: Path, target: str, stub_aux: bool, minimize: bool, timeout: i
             "sliced_lines": 0,
             "reduction": 0.0,
             "assumptions": "-",
-            "error": orig_out.splitlines()[-1] if orig_out.splitlines() else "coqc failed",
+            "error": orig_out.splitlines()[-1] if orig_out.splitlines() else "rocq compile failed",
         }
 
     try:
@@ -87,10 +87,10 @@ def evaluate(path: Path, target: str, stub_aux: bool, minimize: bool, timeout: i
     tmp = Path(tmp_name)
     try:
         tmp.write_text(result["text"])
-        ok, out = run_coqc(tmp, cwd=path.parent, timeout=timeout)
+        ok, out = run_rocq_compile(tmp, cwd=path.parent, timeout=timeout)
         status = "ok" if ok else "check-fail"
         assumptions = assumptions_summary(out)
-        error = "" if ok else (out.splitlines()[-1] if out.splitlines() else "coqc failed")
+        error = "" if ok else (out.splitlines()[-1] if out.splitlines() else "rocq compile failed")
     finally:
         cleanup_artifacts(tmp)
         tmp.unlink(missing_ok=True)

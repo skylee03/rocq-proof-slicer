@@ -6,7 +6,7 @@ abstract: >-
   type-directed program slicing. The prototype uses Rocq's .glob reference
   table to compute a dependency closure from a target theorem, supports a
   proof-skeleton mode that replaces auxiliary proofs with Admitted, and can
-  minimize a slice further with coqc as an oracle.
+  minimize a slice further with the Rocq compiler as an oracle.
 authors:
   - name: "The Rocq Proof Slicer contributors"
 version: 0.1.0

@@ -17,7 +17,7 @@ checked with `Print Assumptions`.
 - Declaration-level slicing from a target theorem.
 - `.glob`-based dependency extraction, with an over-approximate fallback.
 - Exact mode and proof-skeleton mode (`--stub-aux`).
-- Optional dynamic minimization using `coqc` as an oracle (`--minimize`).
+- Optional dynamic minimization using the Rocq compiler as an oracle (`--minimize`).
 - Error localization: slice a failing proof while preserving the kernel error.
 - DOT and Mermaid dependency graph export.
 - Batch evaluation over a small corpus.
@@ -25,12 +25,11 @@ checked with `Print Assumptions`.
 
 ## Requirements
 
-- Rocq/Coq 9.x (`coqc` on `PATH`; tested with Rocq 9.3.0).
+- Rocq 9.x with `rocq` on `PATH` (tested with Rocq 9.3.0).
 - Python 3.10+.
 - Optional: Graphviz for rendering `.dot` files, or any Mermaid renderer.
 
-For Coq 8.x, change `From Stdlib Require Import ...` in the demo/corpus files
-to `From Coq Require Import ...`.
+The prototype invokes `rocq compile` directly.
 
 ## Quick start
 
@@ -50,7 +49,7 @@ Run the regression tests:
 
 ```bash
 make unit     # Python-only unit tests, no Rocq required
-make test     # end-to-end tests, requires coqc
+make test     # end-to-end tests, requires rocq
 ```
 
 ## Install as a command
@@ -81,7 +80,7 @@ lines:  29 -> 16
 dropped: unused1, unused_lemma, unused_lemma2
 wrote:  sliced.v
 
-$ coqc -q sliced.v
+$ rocq compile -q sliced.v
 Closed under the global context
 ```
 
@@ -96,7 +95,7 @@ kept:   4 / 8 declarations
 lines:  29 -> 10
 dropped: helper, unused1, unused_lemma, unused_lemma2
 
-$ coqc -q sliced_stub.v
+$ rocq compile -q sliced_stub.v
 Axioms:
 used_lemma : forall n : nat, n + used2 = used2 + n
 ```
@@ -106,16 +105,16 @@ used_lemma : forall n : nat, n + used2 = used2 + n
 ### Exact slice
 
 ```bash
-coqc -q demo.v
+rocq compile -q demo.v
 python3 slice.py demo.v target -o sliced.v
-coqc -q sliced.v
+rocq compile -q sliced.v
 ```
 
 ### Proof skeleton
 
 ```bash
 python3 slice.py demo.v target --stub-aux -o sliced_stub.v
-coqc -q sliced_stub.v
+rocq compile -q sliced_stub.v
 ```
 
 `Admitted` introduces axioms; `Print Assumptions` reports them.
@@ -124,19 +123,19 @@ coqc -q sliced_stub.v
 
 ```bash
 python3 slice.py corpus/false_positive.v target --no-glob --minimize -o sliced_min.v
-coqc -q sliced_min.v
+rocq compile -q sliced_min.v
 ```
 
 The identifier heuristic sees a local variable named `helper` and keeps the
 unrelated top-level `helper` declaration. `--minimize` removes it after
-checking with `coqc`.
+checking with `rocq compile`.
 
 ### Error localization
 
 ```bash
-coqc -q broken.v || true
+rocq compile -q broken.v || true
 python3 slice.py broken.v broken -o broken_sliced.v
-coqc -q broken_sliced.v || true
+rocq compile -q broken_sliced.v || true
 ```
 
 Both files fail with the same kernel error while the sliced file is much
@@ -169,7 +168,7 @@ reduction, and the axioms reported by `Print Assumptions`.
 3. Compute the reachability closure from the target declaration.
 4. Keep the reachable declarations; in skeleton mode, `Admit` auxiliary
    proofs and follow only their statement dependencies.
-5. Validate with `coqc`; optionally minimize with `coqc` as an oracle.
+5. Validate with the Rocq compiler; optionally minimize with the compiler as an oracle.
 
 See [docs/DESIGN.md](docs/DESIGN.md) for details.
 

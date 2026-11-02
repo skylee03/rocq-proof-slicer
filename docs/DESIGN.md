@@ -9,7 +9,7 @@ practical tool.
 |---|---|
 | program \(P\) | a `.v` file and its top-level declarations |
 | target element \(E\) | a theorem/lemma/definition name |
-| typechecker \(T\) | `coqc` (Rocq/Coq kernel and elaborator) |
+| typechecker \(T\) | `rocq compile` (kernel and elaborator) |
 | type rule dependency map \(M_T\) | `.glob` references (fallback: identifier occurrence) |
 | signature | declaration statement/type |
 | body | proof script or definition body |
@@ -30,7 +30,7 @@ practical tool.
    - skeleton mode follows only statement dependencies for auxiliary lemmas.
 4. **Render** the reachable declarations. In skeleton mode, an auxiliary
    lemma's proof is replaced by `Proof. Admitted.`.
-5. **Validate** with `coqc` and, when needed, `Print Assumptions`.
+5. **Validate** with the Rocq compiler and, when needed, `Print Assumptions`.
 
 ## Why `.glob`?
 
@@ -53,7 +53,7 @@ complete proof.
 
 ## Dynamic minimization
 
-`--minimize` treats `coqc` as an oracle. It greedily tries to remove each
+`--minimize` treats the compiler as an oracle. It greedily tries to remove each
 kept declaration and keeps the removal if the candidate still checks. This
 recovers precision when the static map over-approximates (see
 `corpus/false_positive.v` with `--no-glob`).
