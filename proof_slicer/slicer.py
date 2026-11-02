@@ -18,7 +18,6 @@ from __future__ import annotations
 
 import os
 import re
-import shlex
 import shutil
 import subprocess
 import tempfile
@@ -270,30 +269,17 @@ def render(
 # ---------------------------------------------------------------------------
 
 def compiler_command() -> list[str]:
-    """Return the Rocq compiler command.
-
-    Rocq 9.x ships ``rocq compile``; older Coq installations and the
-    ``coq-core`` compatibility package provide ``coqc``. Prefer ``coqc``
-    when both are available, and allow an explicit override through the
-    ``ROCQ_COMPILE`` environment variable.
-    """
-    override = os.environ.get("ROCQ_COMPILE")
-    if override:
-        return shlex.split(override)
-    coqc = shutil.which("coqc")
-    if coqc:
-        return [coqc]
+    """Return the Rocq compiler command (``rocq compile``)."""
     rocq = shutil.which("rocq")
-    if rocq:
-        return [rocq, "compile"]
-    raise FileNotFoundError(
-        "no Rocq compiler found: install the coq-core compatibility package "
-        "for coqc, or use rocq compile"
-    )
+    if not rocq:
+        raise FileNotFoundError("rocq was not found on PATH")
+    return [rocq, "compile"]
 
 
-def run_coqc(path: Path, cwd: Path | None = None, timeout: int = 120) -> tuple[bool, str]:
-    """Compile a .v file with coqc or rocq compile, returning (ok, output)."""
+def run_rocq_compile(
+    path: Path, cwd: Path | None = None, timeout: int = 120
+) -> tuple[bool, str]:
+    """Compile a .v file with rocq compile, returning (ok, output)."""
     cwd = cwd or path.parent
     try:
         base = compiler_command()
@@ -318,7 +304,7 @@ def cleanup_artifacts(path: Path) -> None:
 
 
 def ensure_glob(input_path: Path, force: bool = False, timeout: int = 120) -> tuple[bool, str]:
-    """Run the compiler if the .glob is missing or stale."""
+    """Run `rocq compile` if the .glob is missing or stale."""
     glob_path = input_path.with_suffix(".glob")
     fresh = (
         glob_path.exists()
@@ -327,7 +313,7 @@ def ensure_glob(input_path: Path, force: bool = False, timeout: int = 120) -> tu
     )
     if fresh and not force:
         return True, ""
-    _ok, output = run_coqc(input_path, cwd=input_path.parent, timeout=timeout)
+    _ok, output = run_rocq_compile(input_path, cwd=input_path.parent, timeout=timeout)
     return glob_path.exists(), output
 
 
@@ -361,7 +347,7 @@ def build_slice(
     else:
         dep_source = "identifier heuristic"
         if use_glob and verbose and glob_output.strip():
-            print("[warn] compiler did not produce .glob; falling back to identifier heuristic")
+            print("[warn] rocq compile did not produce .glob; falling back to identifier heuristic")
 
     keep = closure(blocks, target, type_only_aux=stub_aux)
     static_keep = set(keep)
@@ -420,7 +406,7 @@ def compile_candidate(
     tmp = Path(tmp_name)
     try:
         tmp.write_text(text)
-        ok, _out = run_coqc(tmp, cwd=input_path.parent, timeout=timeout)
+        ok, _out = run_rocq_compile(tmp, cwd=input_path.parent, timeout=timeout)
         return ok
     finally:
         cleanup_artifacts(tmp)

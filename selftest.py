@@ -5,7 +5,7 @@ from __future__ import annotations
 import subprocess
 from pathlib import Path
 
-from proof_slicer.slicer import compiler_command, run_coqc
+from proof_slicer.slicer import compiler_command, run_rocq_compile
 
 ROOT = Path(__file__).resolve().parent
 
@@ -28,7 +28,7 @@ def assert_in(needle: str, haystack: str, label: str) -> None:
 
 def compile_file(relative: str, should_succeed: bool = True) -> str:
     path = ROOT / relative
-    ok, output = run_coqc(path, cwd=path.parent)
+    ok, output = run_rocq_compile(path, cwd=path.parent)
     if ok != should_succeed:
         print(f"FAIL: unexpected compile result for {relative}")
         print(output)
@@ -37,7 +37,7 @@ def compile_file(relative: str, should_succeed: bool = True) -> str:
 
 
 def main() -> None:
-    # 0. toolchain: coqc (coq-core compatibility package) or rocq compile
+    # 0. toolchain: rocq compile
     proc = run(compiler_command() + ["--version"], check=True)
     assert_in("Rocq", proc.stdout + proc.stderr, "Rocq toolchain")
 

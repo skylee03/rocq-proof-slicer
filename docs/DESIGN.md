@@ -9,7 +9,7 @@ practical tool.
 |---|---|
 | program \(P\) | a `.v` file and its top-level declarations |
 | target element \(E\) | a theorem/lemma/definition name |
-| typechecker \(T\) | `coqc` or `rocq compile` (kernel and elaborator) |
+| typechecker \(T\) | `rocq compile` (kernel and elaborator) |
 | type rule dependency map \(M_T\) | `.glob` references (fallback: identifier occurrence) |
 | signature | declaration statement/type |
 | body | proof script or definition body |

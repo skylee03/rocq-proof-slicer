@@ -2,26 +2,17 @@
 set -euo pipefail
 cd "$(dirname "$0")"
 
-# Rocq 9.x ships `rocq compile`; Coq and the coq-core compatibility package
-# provide `coqc`. The Python code does the same detection; keep this script
-# usable in a plain Rocq-only environment too.
-if [[ -n "${ROCQ_COMPILE:-}" ]]; then
-  read -r -a COMPILER <<< "$ROCQ_COMPILE"
-elif command -v coqc >/dev/null 2>&1; then
-  COMPILER=(coqc)
-elif command -v rocq >/dev/null 2>&1; then
-  COMPILER=(rocq compile)
-else
-  echo "error: neither coqc nor rocq was found on PATH" >&2
+if ! command -v rocq >/dev/null 2>&1; then
+  echo "error: rocq was not found on PATH (Rocq 9.x is required)" >&2
   exit 1
 fi
 
 compile() {
-  "${COMPILER[@]}" -q "$@"
+  rocq compile -q "$@"
 }
 
 echo "== 0. environment =="
-"${COMPILER[@]}" --version | head -1
+rocq compile --version | head -1
 
 echo
 echo "== 1. compile original =="

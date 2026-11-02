@@ -25,26 +25,11 @@ checked with `Print Assumptions`.
 
 ## Requirements
 
-- Rocq/Coq 9.x with either `coqc` (from the `coq-core` compatibility package) or
-  `rocq compile` on `PATH`. Tested with Rocq 9.3.0.
+- Rocq 9.x with `rocq` on `PATH` (tested with Rocq 9.3.0).
 - Python 3.10+.
 - Optional: Graphviz for rendering `.dot` files, or any Mermaid renderer.
 
-For Coq 8.x, change `From Stdlib Require Import ...` in the demo/corpus files
-to `From Coq Require Import ...`.
-
-## Compiler detection
-
-The tool automatically uses `coqc` if it is available, and otherwise falls
-back to `rocq compile` (the Rocq 9.x binary without the compatibility package).
-You can override the command explicitly:
-
-```bash
-ROCQ_COMPILE="rocq compile" python3 slice.py demo.v target
-```
-
-The examples below use `coqc -q`. On a Rocq-only installation, replace it with
-`rocq compile -q`; `run.sh` performs this detection automatically.
+The prototype invokes `rocq compile` directly.
 
 ## Quick start
 
@@ -64,7 +49,7 @@ Run the regression tests:
 
 ```bash
 make unit     # Python-only unit tests, no Rocq required
-make test     # end-to-end tests, requires a Rocq/Coq compiler
+make test     # end-to-end tests, requires rocq
 ```
 
 ## Install as a command
@@ -95,7 +80,7 @@ lines:  29 -> 16
 dropped: unused1, unused_lemma, unused_lemma2
 wrote:  sliced.v
 
-$ coqc -q sliced.v
+$ rocq compile -q sliced.v
 Closed under the global context
 ```
 
@@ -110,7 +95,7 @@ kept:   4 / 8 declarations
 lines:  29 -> 10
 dropped: helper, unused1, unused_lemma, unused_lemma2
 
-$ coqc -q sliced_stub.v
+$ rocq compile -q sliced_stub.v
 Axioms:
 used_lemma : forall n : nat, n + used2 = used2 + n
 ```
@@ -120,16 +105,16 @@ used_lemma : forall n : nat, n + used2 = used2 + n
 ### Exact slice
 
 ```bash
-coqc -q demo.v
+rocq compile -q demo.v
 python3 slice.py demo.v target -o sliced.v
-coqc -q sliced.v
+rocq compile -q sliced.v
 ```
 
 ### Proof skeleton
 
 ```bash
 python3 slice.py demo.v target --stub-aux -o sliced_stub.v
-coqc -q sliced_stub.v
+rocq compile -q sliced_stub.v
 ```
 
 `Admitted` introduces axioms; `Print Assumptions` reports them.
@@ -138,19 +123,19 @@ coqc -q sliced_stub.v
 
 ```bash
 python3 slice.py corpus/false_positive.v target --no-glob --minimize -o sliced_min.v
-coqc -q sliced_min.v
+rocq compile -q sliced_min.v
 ```
 
 The identifier heuristic sees a local variable named `helper` and keeps the
 unrelated top-level `helper` declaration. `--minimize` removes it after
-checking with the compiler.
+checking with `rocq compile`.
 
 ### Error localization
 
 ```bash
-coqc -q broken.v || true
+rocq compile -q broken.v || true
 python3 slice.py broken.v broken -o broken_sliced.v
-coqc -q broken_sliced.v || true
+rocq compile -q broken_sliced.v || true
 ```
 
 Both files fail with the same kernel error while the sliced file is much

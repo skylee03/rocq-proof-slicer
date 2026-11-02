@@ -5,15 +5,15 @@
 > The paper slices a program while preserving the typechecker's behavior at a
 > target location. I built a small Rocq prototype of the same closure idea at
 > the declaration level. It is deliberately conservative: it over-approximates
-> dependencies, then validates every output with `coqc` or `rocq compile`.
+> dependencies, then validates every output with `rocq compile`.
 
 ## 1:00 — Exact slice
 
 ```bash
 cd rocq-proof-slicer
-coqc -q demo.v
+rocq compile -q demo.v
 python3 slice.py demo.v target -o sliced.v
-coqc -q sliced.v
+rocq compile -q sliced.v
 ```
 
 Expected:
@@ -31,7 +31,7 @@ unrelated declarations are removed and the result still kernel-checks.
 
 ```bash
 python3 slice.py demo.v target --stub-aux -o sliced_stub.v
-coqc -q sliced_stub.v
+rocq compile -q sliced_stub.v
 ```
 
 Expected:
@@ -51,7 +51,7 @@ signature, drop the body" idea, with `Print Assumptions` tracking the stubs.
 
 ```bash
 python3 slice.py corpus/false_positive.v target --no-glob --minimize -o sliced_min.v
-coqc -q sliced_min.v
+rocq compile -q sliced_min.v
 ```
 
 Expected:
@@ -69,9 +69,9 @@ removes it. Static slice first, dynamic check second.
 ## 4:00 — Error localization
 
 ```bash
-coqc -q broken.v || true
+rocq compile -q broken.v || true
 python3 slice.py broken.v broken -o broken_sliced.v
-coqc -q broken_sliced.v || true
+rocq compile -q broken_sliced.v || true
 ```
 
 Expected: both files fail with
@@ -95,9 +95,8 @@ assumptions.
 
 ## Compiler note
 
-`./run.sh` and the Python code automatically use `coqc` if available, and
-otherwise `rocq compile`. If you type commands manually on a Rocq-only
-installation, replace `coqc -q` with `rocq compile -q`.
+All commands assume `rocq` (Rocq 9.x) is on `PATH`. The tool invokes
+`rocq compile`.
 
 ## 5:00 — Limitations and next steps
 
