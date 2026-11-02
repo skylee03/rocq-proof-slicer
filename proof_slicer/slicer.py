@@ -12,12 +12,14 @@ Key ideas:
   * Support an "approximate" mode that keeps auxiliary theorem statements but
     replaces their proofs with Admitted, then follows only statement
     dependencies for those theorems.
-  * Optionally minimize the static slice further by using coqc as an oracle.
+  * Optionally minimize the static slice further by using the compiler as an oracle.
 """
 from __future__ import annotations
 
 import os
 import re
+import shlex
+import shutil
 import subprocess
 import tempfile
 import time
@@ -264,20 +266,48 @@ def render(
 
 
 # ---------------------------------------------------------------------------
-# coqc oracle
+# Rocq compiler oracle
 # ---------------------------------------------------------------------------
 
+def compiler_command() -> list[str]:
+    """Return the Rocq compiler command.
+
+    Rocq 9.x ships ``rocq compile``; older Coq installations and the
+    ``coq-core`` compatibility package provide ``coqc``. Prefer ``coqc``
+    when both are available, and allow an explicit override through the
+    ``ROCQ_COMPILE`` environment variable.
+    """
+    override = os.environ.get("ROCQ_COMPILE")
+    if override:
+        return shlex.split(override)
+    coqc = shutil.which("coqc")
+    if coqc:
+        return [coqc]
+    rocq = shutil.which("rocq")
+    if rocq:
+        return [rocq, "compile"]
+    raise FileNotFoundError(
+        "no Rocq compiler found: install the coq-core compatibility package "
+        "for coqc, or use rocq compile"
+    )
+
+
 def run_coqc(path: Path, cwd: Path | None = None, timeout: int = 120) -> tuple[bool, str]:
+    """Compile a .v file with coqc or rocq compile, returning (ok, output)."""
     cwd = cwd or path.parent
-    cmd = ["coqc", "-q", path.name]
+    try:
+        base = compiler_command()
+    except FileNotFoundError as e:
+        return False, str(e)
+    cmd = base + ["-q", path.name]
     try:
         proc = subprocess.run(
             cmd, cwd=str(cwd), capture_output=True, text=True, timeout=timeout
         )
     except FileNotFoundError:
-        return False, "coqc not found"
+        return False, f"compiler not found: {' '.join(base)}"
     except subprocess.TimeoutExpired:
-        return False, f"coqc timed out after {timeout}s"
+        return False, f"{' '.join(base)} timed out after {timeout}s"
     return proc.returncode == 0, (proc.stdout or "") + (proc.stderr or "")
 
 
@@ -288,7 +318,7 @@ def cleanup_artifacts(path: Path) -> None:
 
 
 def ensure_glob(input_path: Path, force: bool = False, timeout: int = 120) -> tuple[bool, str]:
-    """Run coqc if the .glob is missing or stale. Returns (glob_exists, output)."""
+    """Run the compiler if the .glob is missing or stale."""
     glob_path = input_path.with_suffix(".glob")
     fresh = (
         glob_path.exists()
@@ -331,7 +361,7 @@ def build_slice(
     else:
         dep_source = "identifier heuristic"
         if use_glob and verbose and glob_output.strip():
-            print("[warn] coqc did not produce .glob; falling back to identifier heuristic")
+            print("[warn] compiler did not produce .glob; falling back to identifier heuristic")
 
     keep = closure(blocks, target, type_only_aux=stub_aux)
     static_keep = set(keep)

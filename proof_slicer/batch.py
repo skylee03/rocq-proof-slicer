@@ -54,7 +54,7 @@ def evaluate(path: Path, target: str, stub_aux: bool, minimize: bool, timeout: i
             "sliced_lines": 0,
             "reduction": 0.0,
             "assumptions": "-",
-            "error": orig_out.splitlines()[-1] if orig_out.splitlines() else "coqc failed",
+            "error": orig_out.splitlines()[-1] if orig_out.splitlines() else "compiler failed",
         }
 
     try:
@@ -90,7 +90,7 @@ def evaluate(path: Path, target: str, stub_aux: bool, minimize: bool, timeout: i
         ok, out = run_coqc(tmp, cwd=path.parent, timeout=timeout)
         status = "ok" if ok else "check-fail"
         assumptions = assumptions_summary(out)
-        error = "" if ok else (out.splitlines()[-1] if out.splitlines() else "coqc failed")
+        error = "" if ok else (out.splitlines()[-1] if out.splitlines() else "compiler failed")
     finally:
         cleanup_artifacts(tmp)
         tmp.unlink(missing_ok=True)

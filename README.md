@@ -17,7 +17,7 @@ checked with `Print Assumptions`.
 - Declaration-level slicing from a target theorem.
 - `.glob`-based dependency extraction, with an over-approximate fallback.
 - Exact mode and proof-skeleton mode (`--stub-aux`).
-- Optional dynamic minimization using `coqc` as an oracle (`--minimize`).
+- Optional dynamic minimization using the Rocq compiler as an oracle (`--minimize`).
 - Error localization: slice a failing proof while preserving the kernel error.
 - DOT and Mermaid dependency graph export.
 - Batch evaluation over a small corpus.
@@ -25,12 +25,26 @@ checked with `Print Assumptions`.
 
 ## Requirements
 
-- Rocq/Coq 9.x (`coqc` on `PATH`; tested with Rocq 9.3.0).
+- Rocq/Coq 9.x with either `coqc` (from the `coq-core` compatibility package) or
+  `rocq compile` on `PATH`. Tested with Rocq 9.3.0.
 - Python 3.10+.
 - Optional: Graphviz for rendering `.dot` files, or any Mermaid renderer.
 
 For Coq 8.x, change `From Stdlib Require Import ...` in the demo/corpus files
 to `From Coq Require Import ...`.
+
+## Compiler detection
+
+The tool automatically uses `coqc` if it is available, and otherwise falls
+back to `rocq compile` (the Rocq 9.x binary without the compatibility package).
+You can override the command explicitly:
+
+```bash
+ROCQ_COMPILE="rocq compile" python3 slice.py demo.v target
+```
+
+The examples below use `coqc -q`. On a Rocq-only installation, replace it with
+`rocq compile -q`; `run.sh` performs this detection automatically.
 
 ## Quick start
 
@@ -50,7 +64,7 @@ Run the regression tests:
 
 ```bash
 make unit     # Python-only unit tests, no Rocq required
-make test     # end-to-end tests, requires coqc
+make test     # end-to-end tests, requires a Rocq/Coq compiler
 ```
 
 ## Install as a command
@@ -129,7 +143,7 @@ coqc -q sliced_min.v
 
 The identifier heuristic sees a local variable named `helper` and keeps the
 unrelated top-level `helper` declaration. `--minimize` removes it after
-checking with `coqc`.
+checking with the compiler.
 
 ### Error localization
 
@@ -169,7 +183,7 @@ reduction, and the axioms reported by `Print Assumptions`.
 3. Compute the reachability closure from the target declaration.
 4. Keep the reachable declarations; in skeleton mode, `Admit` auxiliary
    proofs and follow only their statement dependencies.
-5. Validate with `coqc`; optionally minimize with `coqc` as an oracle.
+5. Validate with the Rocq compiler; optionally minimize with the compiler as an oracle.
 
 See [docs/DESIGN.md](docs/DESIGN.md) for details.
 

@@ -5,7 +5,7 @@
 > The paper slices a program while preserving the typechecker's behavior at a
 > target location. I built a small Rocq prototype of the same closure idea at
 > the declaration level. It is deliberately conservative: it over-approximates
-> dependencies, then validates every output with `coqc`.
+> dependencies, then validates every output with `coqc` or `rocq compile`.
 
 ## 1:00 — Exact slice
 
@@ -63,7 +63,7 @@ minimize: 3 attempts, removed 1
 ```
 
 Point: the identifier heuristic sees a local variable named `helper` and keeps
-the unrelated top-level `helper`. `--minimize` uses `coqc` as an oracle and
+the unrelated top-level `helper`. `--minimize` uses the Rocq compiler as an oracle and
 removes it. Static slice first, dynamic check second.
 
 ## 4:00 — Error localization
@@ -92,6 +92,12 @@ python3 batch.py corpus --target target --stub-aux
 
 Show the Markdown table: status, declarations kept, code-line reduction, and
 assumptions.
+
+## Compiler note
+
+`./run.sh` and the Python code automatically use `coqc` if available, and
+otherwise `rocq compile`. If you type commands manually on a Rocq-only
+installation, replace `coqc -q` with `rocq compile -q`.
 
 ## 5:00 — Limitations and next steps
 
