@@ -1,0 +1,41 @@
+cff-version: 1.2.0
+message: "If you use this prototype, please cite the paper that inspired it."
+title: "Rocq Proof Slicer"
+abstract: >-
+  A declaration-level proof slicing prototype for Rocq/Coq, inspired by
+  type-directed program slicing. The prototype uses Rocq's .glob reference
+  table to compute a dependency closure from a target theorem, supports a
+  proof-skeleton mode that replaces auxiliary proofs with Admitted, and can
+  minimize a slice further with coqc as an oracle.
+authors:
+  - name: "The Rocq Proof Slicer contributors"
+version: 0.1.0
+date-released: 2025-11-02
+license: MIT
+keywords:
+  - Rocq
+  - Coq
+  - proof slicing
+  - theorem proving
+  - LLM
+preferred-citation:
+  type: article
+  title: "Static Program Reduction via Type-Directed Slicing"
+  authors:
+    - family-names: Nguyen
+      given-names: Loi Ngo Duc
+    - family-names: Islam
+      given-names: Tahiatul
+    - family-names: Wang
+      given-names: Theron
+    - family-names: Lenz
+      given-names: Sam
+    - family-names: Kellogg
+      given-names: Martin
+  journal: "Proceedings of the ACM on Software Engineering"
+  volume: 2
+  issue: ISSTA
+  article-number: ISSTA091
+  year: 2025
+  doi: "10.1145/3728968"
+  url: "https://doi.org/10.1145/3728968"

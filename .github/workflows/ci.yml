@@ -1,0 +1,48 @@
+name: CI
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  unit:
+    name: Unit tests (Python ${{ matrix.python-version }})
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ["3.10", "3.12"]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+      - name: Syntax check
+        run: |
+          python -m py_compile slice.py batch.py proof_slicer/*.py tests/*.py
+      - name: Unit tests
+        run: |
+          python -m unittest discover -s tests -v
+
+  integration:
+    name: Integration tests (Rocq 9.3)
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: coq-community/docker-coq-action@v1
+        with:
+          custom_image: rocq/rocq-prover:9.3
+          uninstall: ''
+          custom_script: |
+            startGroup "Install Python"
+              sudo apt-get update -y -q
+              sudo DEBIAN_FRONTEND=noninteractive apt-get install -y -q --no-install-recommends python3
+            endGroup
+            startGroup "Run integration tests"
+              python3 selftest.py
+            endGroup

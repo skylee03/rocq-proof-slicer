@@ -1,0 +1,34 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "rocq-proof-slicer"
+version = "0.1.0"
+description = "A declaration-level proof slicing prototype for Rocq/Coq"
+readme = "README.md"
+requires-python = ">=3.10"
+license = { text = "MIT" }
+authors = [{ name = "The Rocq Proof Slicer contributors" }]
+keywords = ["rocq", "coq", "proof-slicing", "theorem-proving", "llm"]
+classifiers = [
+  "Development Status :: 3 - Alpha",
+  "Intended Audience :: Science/Research",
+  "License :: OSI Approved :: MIT License",
+  "Programming Language :: Python :: 3",
+  "Programming Language :: Python :: 3 :: Only",
+  "Topic :: Scientific/Engineering :: Mathematics",
+  "Topic :: Software Development :: Compilers",
+]
+dependencies = []
+
+[project.scripts]
+proof-slice = "proof_slicer.cli:main"
+proof-slice-batch = "proof_slicer.batch:main"
+
+[tool.setuptools]
+packages = ["proof_slicer"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py310"
